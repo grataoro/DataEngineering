@@ -1,0 +1,116 @@
+version: "3"
+
+services:
+  
+  mysql:
+    image: wesleywillians/mysql-kafka-connect:latest
+    container_name: mysql
+    command: --innodb-use-native-aio=0
+    tty: true
+    restart: always
+    ports:
+      - "33600:3306"
+    environment:
+      - MYSQL_DATABASE=products
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=root
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zoo
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kaf
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: INTERNAL://:9092,OUTSIDE://:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://host.docker.internal:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:6.0.1
+    container_name: control_center
+    hostname: control-center
+    depends_on:
+      - kafka
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka:9092'
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_CONNECT_CLUSTER: http://kafka-connect:8083
+      PORT: 9021
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  kafka-connect:
+    container_name: kafka-connect
+    build: ./connect
+    depends_on:
+      - zookeeper
+      - kafka
+    ports:
+      - 8083:8083
+    environment:
+       CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
+  
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
+    container_name: es01
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    #volumes:
+     # - ./es01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  kib01:
+    image: docker.elastic.co/kibana/kibana:7.11.2
+    container_name: kib01
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://es01:9200
+      ELASTICSEARCH_HOSTS: '["http://es01:9200"]'
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"    
+
+  flask:
+    build: ./flask
+    container_name: flask
+    volumes:
+      - "./flask/scripts:/code/scripts"
+    ports:
+      - "8000:5000"
+
+  redis:
+    container_name: redis
+    image: "redis:alpine"
+ 
