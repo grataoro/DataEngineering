@@ -7,7 +7,6 @@ services:
     container_name: mysql
     command: --innodb-use-native-aio=0
     tty: true
-    restart: always
     ports:
       - "33600:3306"
     environment:
@@ -18,16 +17,21 @@ services:
       - "host.docker.internal:172.17.0.1"
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:6.2.0
     container_name: zoo
+    networks:
+      - de-net
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ALLOW_ANONYMOUS_LOGIN=yes
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    build: ./kafka
     container_name: kaf
     depends_on:
       - zookeeper
+    networks: 
+      - de-net  
     ports:
       - "9092:9092"
       - "9094:9094"
@@ -39,8 +43,22 @@ services:
       KAFKA_LISTENERS: INTERNAL://:9092,OUTSIDE://:9094
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://host.docker.internal:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+      DEFAULT_TOPIC: TOPIC_A
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:3.27.0
+    container_name: kafkadrop
+    networks: 
+      - de-net
+    depends_on:
+      - kafka
+    ports:
+      - 19000:9000
+    environment:
+      - KAFKA_BROKERCONNECT=kafka:9092
+
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:6.0.1
@@ -68,7 +86,7 @@ services:
       - 8083:8083
     environment:
        CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
-  
+
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
@@ -102,15 +120,41 @@ services:
     extra_hosts:
       - "host.docker.internal:172.17.0.1"    
 
-  flask:
-    build: ./flask
-    container_name: flask
-    volumes:
-      - "./flask/scripts:/code/scripts"
+  nifi:
+    container_name: nifi
+    build: ./nifi
+    hostname: nifi
     ports:
-      - "8000:5000"
+      - 8080:8080 # Porta HTTP
+    environment:
+      - NIFI_WEB_HTTP_PORT=8080
+      - NIFI_CLUSTER_IS_NODE=true
+      - NIFI_CLUSTER_NODE_PROTOCOL_PORT=8082
+      - NIFI_ZK_CONNECT_STRING=zookeeper:2181
+      - NIFI_ELECTION_MAX_WAIT=1 min
+    networks:
+      - de-net
+    # depends_on:
+    #   - zookeeper
+    # volumes:
+    #   - "./nifi:/opt/nifi/nifi-current/poli-nifi"
+    #   - /nifi:/data
+      
 
-  redis:
-    container_name: redis
-    image: "redis:alpine"
+networks: 
+  de-net:
+    driver: bridge 
+
+
+  # flask:
+  #   build: ./flask
+  #   container_name: flask
+  #   volumes:
+  #     - "./flask/scripts:/code/scripts"
+  #   ports:
+  #     - "8000:5000"
+
+  # redis:
+  #   container_name: redis
+  #   image: "redis:alpine"
  

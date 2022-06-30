@@ -1,0 +1,13 @@
+{
+  "name": "elastisearch-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "topics": "mysql-server.products.teste",
+    "connection.url": "http://es01:9200",
+    "type.name": "_doc",
+    "key.ignore": "true",
+    "schema.ignore": "true",
+    "value.converter.schemas.enable": "false"
+  }
+}

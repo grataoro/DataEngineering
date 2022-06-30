@@ -25,10 +25,10 @@ ENV CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR "1"
 ENV CONNECT_STATUS_STORAGE_REPLICATION_FACTOR "1"
 ENV CONNECT_PLUGIN_PATH "/usr/share/java,/usr/share/confluent-hub-components,/data/connect-jars"
 
-#ADD connectors /etc/kafka-connect/connectors
+ADD connectors /etc/kafka-connect/connectors
 
-#WORKDIR /etc/kafka-connect/connectors
+WORKDIR /etc/kafka-connect/connectors
 
-#RUN chmod +x ./register_connectors.sh
+RUN chmod +x ./register_connectors.sh
 
-#CMD ["./register_connectors.sh"]
+CMD ["./register_connectors.sh"]

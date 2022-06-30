@@ -1,4 +1,4 @@
 flask==2.1.2
 redis==4.3.3
-mysqlclient==2.1.0
-flask_mysqldb==0.2.0
+mysql-connector-python==8.0.29
+flask-sqlalchemy==2.5.1
