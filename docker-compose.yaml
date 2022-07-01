@@ -1,20 +1,19 @@
 version: "3"
 
 services:
-  
-  mysql:
-    image: wesleywillians/mysql-kafka-connect:latest
-    container_name: mysql
-    command: --innodb-use-native-aio=0
-    tty: true
-    ports:
-      - "33600:3306"
+
+  postgres:
+    container_name: postgres
+    image: postgres
     environment:
-      - MYSQL_DATABASE=products
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_USER=root
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      PGDATA: /data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+        - de-net
+  
 
   zookeeper:
     image: confluentinc/cp-zookeeper:6.2.0
@@ -27,7 +26,7 @@ services:
 
   kafka:
     build: ./kafka
-    container_name: kaf
+    container_name: kafka
     depends_on:
       - zookeeper
     networks: 
@@ -43,9 +42,9 @@ services:
       KAFKA_LISTENERS: INTERNAL://:9092,OUTSIDE://:9094
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://host.docker.internal:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
-      DEFAULT_TOPIC: TOPIC_A
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
+      DEFAULT_TOPIC_A: TOPIC_A
+      DEFAULT_TOPIC_B: TOPIC_B
+    
 
   kafdrop:
     image: obsidiandynamics/kafdrop:3.27.0
@@ -73,8 +72,8 @@ services:
       CONTROL_CENTER_REPLICATION_FACTOR: 1
       CONTROL_CENTER_CONNECT_CLUSTER: http://kafka-connect:8083
       PORT: 9021
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
+    networks:
+      - de-net 
 
   kafka-connect:
     container_name: kafka-connect
@@ -84,11 +83,11 @@ services:
       - kafka
     ports:
       - 8083:8083
+    networks:
+      - de-net  
     environment:
        CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
 
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
 
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.11.2
@@ -102,16 +101,16 @@ services:
       memlock:
         soft: -1
         hard: -1
-    #volumes:
-     # - ./es01:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
+    networks:
+      - de-net
 
   kib01:
     image: docker.elastic.co/kibana/kibana:7.11.2
     container_name: kib01
+    networks:
+      - de-net
     ports:
       - 5601:5601
     environment:
@@ -134,8 +133,8 @@ services:
       - NIFI_ELECTION_MAX_WAIT=1 min
     networks:
       - de-net
-    # depends_on:
-    #   - zookeeper
+    depends_on:
+      - zookeeper
     # volumes:
     #   - "./nifi:/opt/nifi/nifi-current/poli-nifi"
     #   - /nifi:/data
@@ -145,16 +144,3 @@ networks:
   de-net:
     driver: bridge 
 
-
-  # flask:
-  #   build: ./flask
-  #   container_name: flask
-  #   volumes:
-  #     - "./flask/scripts:/code/scripts"
-  #   ports:
-  #     - "8000:5000"
-
-  # redis:
-  #   container_name: redis
-  #   image: "redis:alpine"
- 

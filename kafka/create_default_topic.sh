@@ -26,6 +26,12 @@ kafka-topics --create --if-not-exists \
     --zookeeper $KAFKA_ZOOKEEPER_CONNECT \
     --partitions 1 \
     --replication-factor 1 \
-    --topic $DEFAULT_TOPIC
+    --topic $DEFAULT_TOPIC_A
+
+kafka-topics --create --if-not-exists \
+    --zookeeper $KAFKA_ZOOKEEPER_CONNECT \
+    --partitions 1 \
+    --replication-factor 1 \
+    --topic $DEFAULT_TOPIC_B
 
 sleep infinity
