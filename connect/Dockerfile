@@ -3,9 +3,10 @@ FROM confluentinc/cp-kafka-connect-base:6.0.0
 USER root
 
 # plugins dos conectores 
-RUN confluent-hub install --no-prompt debezium/debezium-connector-mysql:1.2.2        
+
+RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.5.0        
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-elasticsearch:10.0.1
-RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.0.0
+
 
 ENV CONNECT_REST_PORT "8083"
 ENV CONNECT_GROUP_ID "kafka-connect"

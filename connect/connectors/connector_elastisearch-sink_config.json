@@ -1,0 +1,15 @@
+{
+  "value.converter.schemas.enable": "false",
+  "name": "elastisearch-sink",
+  "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "topics": [
+    "TOPIC_A"
+  ],
+  "connection.url": [
+    "http://es01:9200"
+  ],
+  "type.name": "_doc",
+  "key.ignore": "true",
+  "schema.ignore": "true"
+}
