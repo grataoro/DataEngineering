@@ -4,7 +4,7 @@
   "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
   "value.converter": "org.apache.kafka.connect.json.JsonConverter",
   "topics": [
-    "TOPIC_A"
+    "TOPIC_B"
   ],
   "connection.url": [
     "http://es01:9200"
