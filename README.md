@@ -1,1 +1,1 @@
-![](https://github.com/grataoro/DataEngineering/tree/main/imagens/pg.svg)
+![](https://github.com/grataoro/DataEngineering/tree/main/imagens/pg.svg?raw=true)
