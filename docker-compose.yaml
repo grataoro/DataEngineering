@@ -2,19 +2,6 @@ version: "3"
 
 services:
 
-  postgres:
-    container_name: postgres
-    image: postgres
-    environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      PGDATA: /data/postgres
-    ports:
-      - "5432:5432"
-    networks:
-        - de-net
-  
-
   zookeeper:
     image: confluentinc/cp-zookeeper:6.2.0
     container_name: zoo
@@ -134,10 +121,43 @@ services:
       - de-net
     depends_on:
       - zookeeper
-    # volumes:
-    #   - "./nifi:/opt/nifi/nifi-current/poli-nifi"
-    #   - /nifi:/data
-      
+    volumes:
+      - "./nifi/scripts:/opt/nifi/nifi-current"
+
+
+  mongo:
+    container_name: mongo
+    image: mongo:4.2
+    command: ["mongod", "--replSet", "rs0", "--auth"]
+    environment: 
+        - MONGO_ADMIN=user1
+        - RSS_NEWS_USER=user
+        - MONGO_INITDB_ROOT_USERNAME=root
+        - MONGO_INITDB_ROOT_PASSWORD=root
+    networks:
+      - de-net    
+    ports:
+        - 27017:27017
+    volumes:
+        - ./mongo/init.sh:/usr/local/bin/init.sh
+
+
+  # mongo:
+  #   container_name: mongo
+  #   image: mongo
+  #   environment: 
+  #       MONGO_INITDB_DATABASE: teste
+  #       MONGO_INITDB_ROOT_USERNAME: root
+  #       MONGO_INITDB_ROOT_PASSWORD: root
+  #       MONGO_ADMIN: admin
+  #       RSS_NEWS_USER: user
+  #   networks:
+  #     - de-net
+  #   ports:
+  #       - 27017:27017
+  #   volumes:
+  #       - ./mongo/init.sh:/usr/local/bin/init.sh
+
 
 networks: 
   de-net:
