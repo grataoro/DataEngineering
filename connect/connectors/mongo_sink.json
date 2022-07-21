@@ -9,7 +9,7 @@
     "topics": [
       "TOPIC_B"
     ],
-    "connection.uri": "mongodb://root:root@mongo:27017/?replicaSet=rs0",
+    "connection.uri": "mongodb://root:root@mongo:27017/rs0",
     "database": "root",
     "collection": "root",
     "document.id.strategy": "com.mongodb.kafka.connect.sink.processor.id.strategy.BsonOidStrategy"

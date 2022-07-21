@@ -4,7 +4,7 @@ USER root
 
 # plugins dos conectores 
 
-RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.5.0        
+RUN confluent-hub install --no-prompt mongodb/kafka-connect-mongodb:1.0.0   
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-elasticsearch:10.0.1
 
 
